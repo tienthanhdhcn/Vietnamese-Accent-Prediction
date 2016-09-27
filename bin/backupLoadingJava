@@ -1,0 +1,123 @@
+public String Processing(String inputContent) {
+		String[] inputSentence = inputContent.split("[\\.\\!\\,\n\\;\\?]");
+		String output = "";
+		Date d1 = new Date();
+		for (String input : inputSentence) {
+			String in = StandardString(input).trim();
+			String[] words = in.split(" ");
+			Integer numberP[] = new Integer[words.length];
+			Integer trace[][] = new Integer[words.length][maxp];
+			Double[][] Q = new Double[words.length][maxp];
+			String[][] possibleChange = new String[words.length][maxp];
+			//System.out.println(input);
+			for (int i = 0; i < words.length; i++) {
+				int code = 0;
+				if (!words[i].isEmpty()) code = (int)CompareString.getUnsignedChar(words[i].charAt(0));
+				if (i == 0 || (code < (int) 'A' || code > (int) 'Z')) {
+					words[i] = CompareString.getUnsignedString(words[i].toLowerCase());
+					PosibleChange = new HashSet<String>();
+					GetPosibleChange(words[i], 0, signs, VOCAB);
+					if (PosibleChange.size() == 0)
+						PosibleChange.add(words[i]);
+					numberP[i] = PosibleChange.size();
+					PosibleChange.toArray(possibleChange[i]);
+				}
+				else{
+					numberP[i] = 1;
+					possibleChange[i][0] = words[i];
+				}
+			}
+			for (int i = 0; i < words.length; i++) {
+				for (int j = 0; j < maxp; j++) {
+					trace[i][j] = 0;
+				}
+			}
+			for (int i = 0; i < numberP[0]; i++)
+				Q[0][i] = 0.0;
+			if (words.length == 1) {
+				int max = 0;
+				String sure = words[0];
+				for (int i = 0; i < numberP[0]; i++) {
+					String possible = possibleChange[0][i];
+					int number1GRam = GetGramCount(possible, _1Grams);
+					if (max < number1GRam) {
+						max = number1GRam;
+						sure = possible;
+					}
+				}
+				output = output + "\n" + sure;
+			} else {
+				for (int i = 1; i < words.length; i++) {
+					int recentPossibleNum = numberP[i];
+					int oldPossibleNum = numberP[i - 1];
+					for (int j = 0; j < recentPossibleNum; j++) {
+						Q[i][j] = MIN;
+						boolean has = false;
+						double temp = MIN;
+						int count = 0;
+						for (int k = 0; k < oldPossibleNum; k++) {
+							String _new = possibleChange[i][j];
+							String _old = possibleChange[i - 1][k];
+							int number2GRam = GetGramCount(_old + " " + _new,
+									_2Grams);
+							int number1GRam = GetGramCount(_old, _1Grams);
+							if (number2GRam > 0 && number1GRam > 0)
+								has = true;
+							double log = Math.log((double) (number2GRam + 1)
+									/ (number1GRam + totalcountNGram));
+							if (temp != Q[i - 1][k]) {
+								count++;
+								if (temp == MIN)
+								temp = Q[i - 1][k];
+							}
+							double value = Q[i - 1][k] + log;
+							if (Q[i][j] < value) {
+								Q[i][j] = value;
+								trace[i][j] = k;
+							}
+						}
+						if (has == false && count == 1) {
+							Q[i][j] = -MIN;
+							for (int k = 0; k < oldPossibleNum; k++) {
+								String _new = possibleChange[i][j];
+								String _old = possibleChange[i - 1][k];
+								int number2GRam = GetGramCount(_old + " "
+										+ _new, _2Grams);
+								int number1GRam = GetGramCount(_old, _1Grams);
+								double log = Math
+										.log((double) (number2GRam + 1)
+												/ (number1GRam + totalcountNGram));
+								double value = log;
+								if (Q[i][j] > value) {
+									Q[i][j] = value;
+									trace[i][j] = k;
+								}
+							}
+							Q[i][j] = Q[i][j] + Q[i-1][trace[i][j]];
+						}
+					}
+				}
+				double max = MIN;
+				int k = 0;
+				for (int i = 0; i < numberP[words.length - 1]; i++) {
+
+					if (max <= Q[words.length - 1][i]) {
+						max = Q[words.length - 1][i];
+						k = i;
+					}
+				}
+				String result = possibleChange[words.length - 1][k];
+				k = trace[words.length - 1][k];
+				int i = words.length - 2;
+
+				while (i >= 0) {
+					result = possibleChange[i][k] + " " + result;
+					k = trace[i--][k];
+				}
+				output += result + "\n";
+			}
+		}
+		Date d2 = new Date();
+		// System.out.println(d2.getTime() - d1.getTime());
+		return output;
+	}
