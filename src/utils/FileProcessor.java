@@ -1,4 +1,4 @@
-package CalculateAccuracy;
+package utils;
 
 
 
@@ -12,7 +12,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Vector;
 
-public class FileProcessing {
+public class FileProcessor {
 	
 	/**================================================================
 	 * 

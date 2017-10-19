@@ -1,125 +1,14 @@
-package NGram;
+package utils;
 public class CompareString {
 	public static String getUnsignedString(String s) {
         StringBuffer unsignedString = new StringBuffer();
         for (int i = 0; i < s.length(); i++) {
         	if (s.codePointAt(i) < 700 || s.codePointAt(i) > 850)
             unsignedString.append(getUnsignedChar(s.charAt(i)));
-            //System.out.println(s.charAt(i) +":" + s.codePointAt(i));
         }
         return unsignedString.toString();
 	}
- /**
-  * aàáảạãâầấẩậẫăằắẳặẵ
-eèéẻẹẽêềếểệễ
-iìíỉịĩ
-oòóỏọõôồốổộỗơờớởợỡ
-uùúủụũưừứửựữ
-yỳýỷỵỹ
-dđ
-  * @param c
-  * @return
-  */
-	/*public static char getUnsignedChar(char c) {
-		switch (c) {
-		case'a':
-		case'à':
-		case'á':
-		case'ả':
-		case'ạ':
-		case'ã':
-		case'â':
-		case'ầ':
-		case'ấ':
-		case'ẩ':
-		case'ậ':
-		case'ẫ':
-		case'ă':
-		case'ằ':
-		case'ắ':
-		case'ẳ':
-		case'ặ':
-		case'ẵ':
-		{
-			return 'a';
-		}
-		case'e':
-		case'è':
-		case'é':
-		case'ẻ':
-		case'ẹ':
-		case'ẽ':
-		case'ê':
-		case'ề':
-		case'ế':
-		case'ể':
-		case'ệ':
-		case'ễ':
-		{
-			return 'e';
-		}
-		case'i':
-		case'ì':
-		case'í':
-		case'ỉ':
-		case'ị':
-		case'ĩ':
-		{
-			return 'i';
-		}
-		case'o':
-		case'ò':
-		case'ó':
-		case'ỏ':
-		case'ọ':
-		case'õ':
-		case'ô':
-		case'ồ':
-		case'ố':
-		case'ổ':
-		case'ộ':
-		case'ỗ':
-		case'ơ':
-		case'ờ':
-		case'ớ':
-		case'ở':
-		case'ợ':
-		case'ỡ':
-		{
-			return 'o';
-		}
-		case'u':
-		case'ù':
-		case'ú':
-		case'ủ':
-		case'ụ':
-		case'ũ':
-		case'ư':
-		case'ừ':
-		case'ứ':
-		case'ử':
-		case'ự':
-		case'ữ':
-		{
-			return 'u';
-		}
-		case'y':
-		case'ỳ':
-		case'ý':
-		case'ỷ':
-		case'ỵ':
-		case'ỹ':
-		{
-			return 'y';
-		}
-		case'd':
-		case'đ':
-		{
-			return 'd';
-		}
-		default: return c;
-		}
-	}*/
+ 
 	public static char getUnsignedChar(char c) {
 	    if (c=='\u00E1'||c=='\u00E0'||c=='\u1EA3'||c=='\u00E3'||c=='\u1EA1'||
 	        c=='\u0103'||c=='\u1EAF'||c=='\u1EB1'||c=='\u1EB3'||c=='\u1EB5'||c=='\u1EB7'||
@@ -166,10 +55,6 @@ dđ
 	    return c;
 	}
 	public static boolean compareString(String str1, String str2) {
-		/*String regex = " |\n|\t|\\.|,|;\"\'";
-		String tmp1 = getUnsignedString(str1).toLowerCase().replaceAll(regex, "");
-		String tmp2 = getUnsignedString(str2).toLowerCase().replaceAll(regex, "");*/
-		//System.out.println (str1 + "\t" + str2 + ":" +str1.equalsIgnoreCase(str2));
 		return str1.trim().equalsIgnoreCase(str2.trim());
 	}
 	public static void main(String[] args) {

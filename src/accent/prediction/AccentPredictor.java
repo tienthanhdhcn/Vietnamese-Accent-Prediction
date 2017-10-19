@@ -1,4 +1,4 @@
-package NGram;
+package accent.prediction;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -11,27 +11,43 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class Loading {
+public class AccentPredictor {
 	Set<String> VOCAB;
-	Map<String, Integer> _1Grams;
-	Map<String, Integer> _2Grams;
-	Set<String> signs;
+	Map<String, Integer> _1Gram; // 1-gram
+	Map<String, Integer> _2Grams; // 2-grams
+	Set<String> accents;
 	int max = 18;
 	double MIN = -1000;
-	Set<String> PosibleChange = new HashSet<String>();
-
-	public void GetPosibleChange(String input, int index,
-			Set<String> posibleChange, Set<String> voCab) {
+	long sizeNGram = 0;
+	long totalcountNGram = 0;
+	Set<String> globalPosibleChanges = new HashSet<String>();
+	
+	public AccentPredictor(String _1GramFile, String _2GramsFile, String vocabFile) {
+		System.out.println("Loading NGrams...");
+		loadNGram(_1GramFile, _2GramsFile, "datasets/AccentInfo.txt", vocabFile);
+		System.out.println("Done!");
+	}
+	
+	public AccentPredictor(boolean loadingSmallDatasets) {
+		System.out.println("Loading NGrams...");
+		if(loadingSmallDatasets)
+			loadNGram("datasets/news1gram_small", "datasets/news2grams_small", "datasets/AccentInfo.txt", "datasets/vocab");
+		else loadNGram("datasets/news1gram_large", "datasets/news2grams_large", "datasets/AccentInfo.txt", "datasets/vocab");
+		System.out.println("Done!");
+	}
+	
+	public void getPosibleChanges(String input, int index,
+			Set<String> posibleChanges, Set<String> voCab) {
 		if (index > input.length())
 			return;
 		else if (index == input.length()) {
 			if (voCab.contains(input))
-				PosibleChange.add(input);
+				globalPosibleChanges.add(input);
 			return;
 		}
 		char[] charSeq = input.toCharArray();
 		boolean check = false;
-		for (String s : posibleChange) {
+		for (String s : posibleChanges) {
 			if (s.indexOf(charSeq[index]) != -1) {
 				for (int i = 0; i < s.length(); i++) {
 					char[] tmp = input.toCharArray();
@@ -41,20 +57,17 @@ public class Loading {
 						sTmp += tmp[j] + "";
 					}
 
-					GetPosibleChange(sTmp, index + 1, posibleChange, voCab);
+					getPosibleChanges(sTmp, index + 1, posibleChanges, voCab);
 				}
 				check = true;
 			}
 
 		}
 		if (!check)
-			GetPosibleChange(input, index + 1, posibleChange, voCab);
+			getPosibleChanges(input, index + 1, posibleChanges, voCab);
 	}
 
-	long sizeNGram = 0;
-	long totalcountNGram = 0;
-
-	public Map<String, Integer> ReadNgramFile(String fileIn,
+	public Map<String, Integer> getNgrams(String fileIn,
 			boolean recalculateSize, boolean recalculateTotal) {
 		File f = new File(fileIn);
 		Map<String, Integer> ngrams = new HashMap<String, Integer>();
@@ -99,9 +112,9 @@ public class Loading {
 		return ngrams;
 	}
 
-	public Set<String> ReadSignInfo(String fileIn) {
+	public Set<String> getAccentInfo(String fileIn) {
 		File f = new File(fileIn);
-		Set<String> output = new HashSet();
+		Set<String> output = new HashSet<String>();
 		FileInputStream fis = null;
 		InputStreamReader isr = null;
 		BufferedReader br = null;
@@ -120,9 +133,9 @@ public class Loading {
 		return output;
 	}
 
-	public Set<String> ReadVocab(String fileIn) {
+	public Set<String> getVocab(String fileIn) {
 		File f = new File(fileIn);
-		Set<String> output = new HashSet();
+		Set<String> output = new HashSet<String>();
 		FileInputStream fis = null;
 		InputStreamReader isr = null;
 		BufferedReader br = null;
@@ -140,14 +153,14 @@ public class Loading {
 		return output;
 	}
 
-	public String StandardString(String input) {
+	public String normaliseString(String input) {
 		String in = input.replaceAll("[\t\"\':\\(\\)]", " ").replaceAll(
 				"\\s{2,}", " ");
-		in = in.toLowerCase();
+		
 		return in;
 	}
 
-	public int GetGramCount(String ngramWord, Map<String, Integer> ngrams) {
+	public int getGramCount(String ngramWord, Map<String, Integer> ngrams) {
 		if (!ngrams.containsKey(ngramWord))
 			return 0;
 		int output = ngrams.get(ngramWord);
@@ -157,32 +170,41 @@ public class Loading {
 	int maxn = 100;
 	int maxp = 100;
 
-	public void LoadNGram(String _1GramFile, String _2GramFile,
-			String signInfo, String voCabFile) {
-		VOCAB = ReadVocab(voCabFile);
-		_1Grams = ReadNgramFile(_1GramFile, true, true);
-		_2Grams = ReadNgramFile(_2GramFile, false, false);
-		signs = ReadSignInfo(signInfo);
+	public void loadNGram(String _1GramFile, String _2Gram2File,
+			String accentInfoFile, String vocabFile) {
+		VOCAB = getVocab(vocabFile);
+		_1Gram = getNgrams(_1GramFile, true, true);
+		_2Grams = getNgrams(_2Gram2File, false, false);
+		accents = getAccentInfo(accentInfoFile);
 	}
 
-	public String Processing(String inputContent) {
+	public Set<String> getPosibleChanges() {
+		return globalPosibleChanges;
+	}
+
+	public void setPosibleChanges() {
+		globalPosibleChanges.clear();
+		globalPosibleChanges = new HashSet<String>();
+	}
+	
+	public String predictAccents(String inputContent) {
 		String[] inputSentence = inputContent.split("[\\.\\!\\,\n\\;\\?]");
 		String output = "";
-		Date d1 = new Date();
 		for (String input : inputSentence) {
-			String in = StandardString(input).trim();
-			String[] words = in.split(" ");
+			String in = normaliseString(input).trim();
+			String lowercaseIn = in.toLowerCase();
+			String[] words = lowercaseIn.split(" ");
 			Integer numberP[] = new Integer[words.length];
 			Integer trace[][] = new Integer[words.length][maxp];
 			Double[][] Q = new Double[words.length][maxp];
 			String[][] possibleChange = new String[words.length][maxp];
 			for (int i = 0; i < words.length; i++) {
-				PosibleChange = new HashSet<String>();
-				GetPosibleChange(words[i], 0, signs, VOCAB);
-				if (PosibleChange.size() == 0)
-					PosibleChange.add(words[i]);
-				numberP[i] = PosibleChange.size();
-				PosibleChange.toArray(possibleChange[i]);
+				globalPosibleChanges = new HashSet<String>();
+				getPosibleChanges(words[i], 0, accents, VOCAB);
+				if (globalPosibleChanges.size() == 0)
+					globalPosibleChanges.add(words[i]);
+				numberP[i] = globalPosibleChanges.size();
+				globalPosibleChanges.toArray(possibleChange[i]);
 			}
 			for (int i = 0; i < words.length; i++) {
 				for (int j = 0; j < maxp; j++) {
@@ -199,7 +221,7 @@ public class Loading {
 				for (int i = 0; i < numberP[0]; i++) {
 					String possible = possibleChange[0][i];
 
-					int number1GRam = GetGramCount(possible, _1Grams);
+					int number1GRam = getGramCount(possible, _1Gram);
 
 					if (max < number1GRam) {
 						max = number1GRam;
@@ -219,10 +241,10 @@ public class Loading {
 						for (int k = 0; k < oldPossibleNum; k++) {
 							String _new = possibleChange[i][j];
 							String _old = possibleChange[i - 1][k];
-							int number2GRam = GetGramCount(_old + " " + _new,
+							int number2GRam = getGramCount(_old + " " + _new,
 									_2Grams);
 
-							int number1GRam = GetGramCount(_old, _1Grams);
+							int number1GRam = getGramCount(_old, _1Gram);
 							if (number2GRam > 0 && number1GRam > 0)
 								has = true;
 							double log = Math.log((double) (number2GRam + 1)
@@ -244,10 +266,10 @@ public class Loading {
 							for (int k = 0; k < oldPossibleNum; k++) {
 								String _new = possibleChange[i][j];
 								String _old = possibleChange[i - 1][k];
-								int number2GRam = GetGramCount(_old + " "
+								int number2GRam = getGramCount(_old + " "
 										+ _new, _2Grams);
 
-								int number1GRam = GetGramCount(_old, _1Grams);
+								int number1GRam = getGramCount(_old, _1Gram);
 
 								double log = Math
 										.log((double) (number2GRam + 1)
@@ -282,48 +304,37 @@ public class Loading {
 					result = possibleChange[i][k] + " " + result;
 					k = trace[i--][k];
 				}
-				output += result + "\n";
+				output += processOutput(in, result) + "\n";
 			}
 		}
-		Date d2 = new Date();
-		 System.out.println(d2.getTime() - d1.getTime());
-		return output;
+		return output.trim();
 	}
 
-	public Set<String> getPosibleChange() {
-		return PosibleChange;
+	private String processOutput(String input, String output) {
+		StringBuffer str = new StringBuffer();
+		for(int i = 0; i < input.length(); i++) {
+			char inputChar = input.charAt(i);
+			char outputChar = output.charAt(i);
+			if(Character.isUpperCase(inputChar))
+				str.append(Character.toUpperCase(outputChar));
+			else str.append(outputChar);
+			
+		}	
+		return str.toString();
 	}
-
-	public void setPosibleChange() {
-		PosibleChange.clear();
-		PosibleChange = new HashSet<String>();
-	}
-
+	
 	public static void main(String[] args) throws IOException {
-		Loading ld = new Loading();
-		System.out.println("Loading NGram...");
-		ld.LoadNGram("lib/news1gram", "lib/news2gram", "lib/SignInfo.txt",
-				"lib/vocab");
-		System.out.println("Done!");
-		/*
-		 * System.out .println(ld .Processing( CompareString.getUnsignedString(
-		 * "Một là dùng máy bay trực thăng du lịch kéo tấm lưới bọc cụ rùa đưa lên tháp Rùa; hai là dùng ca-nô quân sự có cần trục máy 5 - 7 tạ để trục nhấc tấm lưới bọc cụ rùa đưa lên bờ.Ông Khôi cho biết thêm, việc bắt cụ rùa dưới nước bằng lưới không khó bằng việc đưa cụ rùa từ dưới nước lên bờ. Đây là công việc cần phải rất cẩn trọng, không thể dùng sức người đưa cụ rùa lên bằng tay được, vì không cẩn thận sẽ gây thương tích hoặc làm gãy chân cụ rùa.Cũng theo ông Khôi, phương án dùng máy bay trực thăng đưa cụ rùa lên bờ là an toàn nhất. Tất cả những đề xuất trên sẽ được lãnh đạo TP Hà Nội quyết định trong cuộc họp ngày"
-		 * ), "lib/news1gram", "lib/news2gram", "lib/SignInfo.txt",
-		 * "lib/vocab"));
-		 */
-
+		AccentPredictor ap = new AccentPredictor(false); // Load large n-grams files (~ higher accuracy)
+		//AccentPredictor ap = new AccentPredictor("datasets/news1gram_small", "datasets/news2grams_small", "datasets/vocab"); // Using your own data
 		while (true) {
-			BufferedReader br = new BufferedReader(new InputStreamReader(
-					System.in, "utf8"));
-			System.out
-					.println("===============================================");
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in, "utf8"));
+			System.out.println("===============================================");
 			System.out.print("Nhập vào chuỗi ký tự:");
 			String s = (br.readLine());
 			System.out.println((s));
 			System.out.print("\nKết quả:");
-			System.out.println(ld.Processing(s));
-			System.out
-					.println("===============================================");
+			System.out.println(ap.predictAccents(s));
+			System.out.println("===============================================");
 		}
 	}
 }
