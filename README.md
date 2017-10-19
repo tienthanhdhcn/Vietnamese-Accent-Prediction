@@ -4,8 +4,8 @@
 
 ### Performances
 #### All the tests were done on my Macbook, 2.5 GHz Intel Core i7, 16 GB Ram
-- Speed: **600** sentences per second ~ **6000** words/syllables per second on 
-- Accuracy: **96.22%** on *test.txt* provided in *datasets* folder
+- Speed: **350** sentences per second ~ **4000** words/syllables per second on 
+- Accuracy: **95.13%** on *test.txt* provided in *datasets* folder
 
 ```java
 AccuracyCalculator aC = new AccuracyCalculator(); 
