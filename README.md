@@ -7,8 +7,8 @@
 - Accuracy: **95.13%** on *test.txt* provided in *datasets* folder
 
 ```java
-AccuracyCalculator aC = new AccuracyCalculator(); 
-System.out.println("Accuracy:" + aC.getAccuracy("datasets/test.txt") +"%");
+AccuracyCalculator ac = new AccuracyCalculator(); 
+System.out.println("Accuracy:" + ac.getAccuracy("datasets/test.txt") +"%");
 ```
 
 ### Examples

@@ -44,8 +44,8 @@ public class AccuracyCalculator {
 	}
 	
 	public static void main(String[] args) throws IOException {
-		AccuracyCalculator aC = new AccuracyCalculator();
-		System.out.println("Accuracy:" + aC.getAccuracy("datasets/test.txt") +"%");
+		AccuracyCalculator ac = new AccuracyCalculator();
+		System.out.println("Accuracy:" + ac.getAccuracy("datasets/test.txt") +"%");
 	}
 	
 }
