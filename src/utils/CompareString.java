@@ -57,8 +57,4 @@ public class CompareString {
 	public static boolean compareString(String str1, String str2) {
 		return str1.trim().equalsIgnoreCase(str2.trim());
 	}
-	public static void main(String[] args) {
-		CompareString cs = new CompareString();
-		//System.out.println(cs.getUnsignedString("Tổ chức lưu trữ thông tin trên máy tính và sử dụng máy tính để giải quyết vấn đề thông dụng.".toLowerCase()));
-	}
 }

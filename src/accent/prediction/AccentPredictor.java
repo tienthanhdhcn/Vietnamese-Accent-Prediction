@@ -5,14 +5,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import utils.Utils;
+
 public class AccentPredictor {
-	Set<String> VOCAB;
 	Map<String, Integer> _1Gram; // 1-gram
 	Map<String, Integer> _2Grams; // 2-grams
 	Set<String> accents;
@@ -22,32 +22,35 @@ public class AccentPredictor {
 	long totalcountNGram = 0;
 	Set<String> globalPosibleChanges = new HashSet<String>();
 	
-	public AccentPredictor(String _1GramFile, String _2GramsFile, String vocabFile) {
+	public AccentPredictor(String _1GramFile, String _2GramsFile) {
 		System.out.println("Loading NGrams...");
-		loadNGram(_1GramFile, _2GramsFile, "datasets/AccentInfo.txt", vocabFile);
+		loadNGram(_1GramFile, _2GramsFile, "datasets/AccentInfo.txt");
 		System.out.println("Done!");
 	}
 	
-	public AccentPredictor(boolean loadingSmallDatasets) {
+	public AccentPredictor() {
 		System.out.println("Loading NGrams...");
-		if(loadingSmallDatasets)
-			loadNGram("datasets/news1gram_small", "datasets/news2grams_small", "datasets/AccentInfo.txt", "datasets/vocab");
-		else loadNGram("datasets/news1gram_large", "datasets/news2grams_large", "datasets/AccentInfo.txt", "datasets/vocab");
+		loadNGram("datasets/news1gram", "datasets/news2grams", "datasets/AccentInfo.txt");
 		System.out.println("Done!");
 	}
 	
+	int maxWordLength = 8;
 	public void getPosibleChanges(String input, int index,
-			Set<String> posibleChanges, Set<String> voCab) {
+			Set<String> posibleChanges) {
+		if(input.length() > maxWordLength) return;
 		if (index > input.length())
 			return;
 		else if (index == input.length()) {
-			if (voCab.contains(input))
+			
+			if (_1Gram.containsKey(input)) {
 				globalPosibleChanges.add(input);
+			}
 			return;
 		}
 		char[] charSeq = input.toCharArray();
 		boolean check = false;
 		for (String s : posibleChanges) {
+			
 			if (s.indexOf(charSeq[index]) != -1) {
 				for (int i = 0; i < s.length(); i++) {
 					char[] tmp = input.toCharArray();
@@ -57,14 +60,14 @@ public class AccentPredictor {
 						sTmp += tmp[j] + "";
 					}
 
-					getPosibleChanges(sTmp, index + 1, posibleChanges, voCab);
+					getPosibleChanges(sTmp, index + 1, posibleChanges);
 				}
 				check = true;
 			}
 
 		}
 		if (!check)
-			getPosibleChanges(input, index + 1, posibleChanges, voCab);
+			getPosibleChanges(input, index + 1, posibleChanges);
 	}
 
 	public Map<String, Integer> getNgrams(String fileIn,
@@ -85,7 +88,7 @@ public class AccentPredictor {
 				int indexTab = line.lastIndexOf('\t');
 				if (indexTab < indexSpace)
 					indexTab = indexSpace;
-				String ngramWord = line.substring(0, indexTab).toLowerCase();
+				String ngramWord = line.substring(0, indexTab);
 				size++;
 				int ngramCount = Integer.parseInt(line.substring(indexTab + 1));
 				counts += ngramCount;
@@ -146,18 +149,11 @@ public class AccentPredictor {
 			while (br.ready()) {
 				String line = br.readLine();
 				if (line != null && line.trim().length() > 0)
-					output.add(line);
+					output.add(line.split("\\s+")[0]);
 			}
 		} catch (IOException e) {
 		}
 		return output;
-	}
-
-	public String normaliseString(String input) {
-		String in = input.replaceAll("[\t\"\':\\(\\)]", " ").replaceAll(
-				"\\s{2,}", " ");
-		
-		return in;
 	}
 
 	public int getGramCount(String ngramWord, Map<String, Integer> ngrams) {
@@ -171,10 +167,9 @@ public class AccentPredictor {
 	int maxp = 100;
 
 	public void loadNGram(String _1GramFile, String _2Gram2File,
-			String accentInfoFile, String vocabFile) {
-		VOCAB = getVocab(vocabFile);
+			String accentInfoFile) {
 		_1Gram = getNgrams(_1GramFile, true, true);
-		_2Grams = getNgrams(_2Gram2File, false, false);
+		_2Grams = getNgrams(_2Gram2File, true, true);
 		accents = getAccentInfo(accentInfoFile);
 	}
 
@@ -191,7 +186,8 @@ public class AccentPredictor {
 		String[] inputSentence = inputContent.split("[\\.\\!\\,\n\\;\\?]");
 		String output = "";
 		for (String input : inputSentence) {
-			String in = normaliseString(input).trim();
+			setPosibleChanges();
+			String in = Utils.normaliseString(input);
 			String lowercaseIn = in.toLowerCase();
 			String[] words = lowercaseIn.split(" ");
 			Integer numberP[] = new Integer[words.length];
@@ -200,11 +196,12 @@ public class AccentPredictor {
 			String[][] possibleChange = new String[words.length][maxp];
 			for (int i = 0; i < words.length; i++) {
 				globalPosibleChanges = new HashSet<String>();
-				getPosibleChanges(words[i], 0, accents, VOCAB);
+				getPosibleChanges(words[i], 0, accents);
 				if (globalPosibleChanges.size() == 0)
 					globalPosibleChanges.add(words[i]);
 				numberP[i] = globalPosibleChanges.size();
 				globalPosibleChanges.toArray(possibleChange[i]);
+			
 			}
 			for (int i = 0; i < words.length; i++) {
 				for (int j = 0; j < maxp; j++) {
@@ -324,8 +321,8 @@ public class AccentPredictor {
 	}
 	
 	public static void main(String[] args) throws IOException {
-		AccentPredictor ap = new AccentPredictor(false); // Load large n-grams files (~ higher accuracy)
-		//AccentPredictor ap = new AccentPredictor("datasets/news1gram_small", "datasets/news2grams_small", "datasets/vocab"); // Using your own data
+		AccentPredictor ap = new AccentPredictor(); // Load default n-grams files
+//		AccentPredictor ap = new AccentPredictor("datasets/news1gram", "datasets/new2grams"); // Using your own data
 		while (true) {
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in, "utf8"));
 			System.out.println("===============================================");

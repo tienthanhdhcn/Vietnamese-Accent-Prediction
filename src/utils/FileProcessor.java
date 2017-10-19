@@ -61,6 +61,7 @@ public class FileProcessor {
 			while (br.ready()) {
 				result.add(br.readLine());
 			}
+			br.close();
 			return result;
 		}catch (IOException e) {
 			
@@ -76,10 +77,10 @@ public class FileProcessor {
 			FileInputStream fis = new FileInputStream (f);
 			InputStreamReader isr = new InputStreamReader (fis,"UTF8");
 			BufferedReader br = new BufferedReader (isr);
-			Vector <String> result = new Vector <String> ();
 			while (br.ready()) {
 				sb.append(br.readLine() + "\n");
 			}
+			br.close();
 			return sb.toString();
 		}catch (IOException e) {
 			
