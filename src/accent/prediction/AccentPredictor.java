@@ -169,7 +169,7 @@ public class AccentPredictor {
 	public void loadNGram(String _1GramFile, String _2Gram2File,
 			String accentInfoFile) {
 		_1Gram = getNgrams(_1GramFile, true, true);
-		_2Grams = getNgrams(_2Gram2File, true, true);
+		_2Grams = getNgrams(_2Gram2File, false, false);
 		accents = getAccentInfo(accentInfoFile);
 	}
 
