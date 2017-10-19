@@ -41,7 +41,7 @@ String predictedStr = ap.predictAccents(str);
 
 ```java
 String dataFolderPath = "path_to_your_data"; //The folder contains your text data
-int numberOfProcessingFiles = 100; //The max number of files you plan to process (-1 means using all the data)
+int numberOfProcessingFiles = -1; //The max number of files you plan to process (-1 means using all the data)
 boolean toLowercase = true; // it is set to "true", the n-grams will be converted to lowercase
 String _1GramFileOut =  "datasets/news1gram";
 String _2GramsFileOut =  "datasets/news2grams";
