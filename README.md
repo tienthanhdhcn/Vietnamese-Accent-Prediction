@@ -1,6 +1,5 @@
 # Vietnamese Accent Prediction
-## This project is to automatically assign accents to non-accented Vietnamese text using n-gram languagle model with markov chain
-- In this code, I use unigram and bigrams. However, you can easily extend to trigrams
+## A very simple/fast/accurate accent prediction for non-accented Vietnamese text using n-gram languagle model with markov chain
 
 ### Performances
 #### All the tests were done on my Macbook, 2.5 GHz Intel Core i7, 16 GB Ram
