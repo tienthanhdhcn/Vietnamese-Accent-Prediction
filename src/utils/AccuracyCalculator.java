@@ -31,12 +31,19 @@ public class AccuracyCalculator {
 			//System.out.println(inputSentence[i] +"\n" + output[i]);
 			String wordsIn[] = Utils.normaliseString(inputSentence[i]).trim().split(" ");
 			String wordsOut[] = output[i].trim().split(" ");
+			boolean shouldPrint = false;
 			if (wordsIn.length == wordsOut.length) 
 				for (int j = 0; j < wordsOut.length; j++) {
 					if (wordsIn[j].trim().equalsIgnoreCase(wordsOut[j].trim())) countMatch ++;
-				
+					else {
+						shouldPrint = true;
+					}
 					countAll++;
 				}
+			if(shouldPrint) {
+				System.out.println("input: " + inputSentence[i]);
+				System.out.println("output: " + output[i]);
+			}
 		}
 		System.out.println("Correct:"+countMatch);
 		System.out.println("All:"+countAll);

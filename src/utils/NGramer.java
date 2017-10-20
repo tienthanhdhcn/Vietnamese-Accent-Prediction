@@ -73,10 +73,9 @@ public class NGramer {
         }
 	}
 	
-//	public static void main(String[] args) {
-//		new NGramer("/Users/thanhvu/Documents/PhDCode/BaomoiData/cleaned").
-//		statisticNGrams(600, true, "datasets/news1gram_large", "datasets/news2grams_large");
-//		new NGramer("/Users/thanhvu/Documents/PhDCode/BaomoiData/vnexpress").
-//		statisticNGrams(600, true, "datasets/news1gram_small", "datasets/news2grams_small");
-//	}
+	public static void main(String[] args) {
+		new NGramer("/Users/thanhvu/Documents/PhDCode/BaomoiData/vnexpress").
+		statisticNGrams(2000, true, "datasets/news1gram_vnexpress", "datasets/news2grams_vnexpress");
+		
+	}
 }
