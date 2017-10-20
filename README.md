@@ -1,10 +1,10 @@
 # Vietnamese Accent Prediction
-## A very simple/fast/accurate accent prediction for non-accented Vietnamese text using n-gram languagle model with markov chain
+## A very simple/fast/accurate accent prediction for non-accented Vietnamese text using n-gram language model with Markov Chain
 
 ### Performances
 #### All the tests were done on my Macbook, 2.5 GHz Intel Core i7, 16 GB Ram
-- Speed: **350** sentences per second ~ **4000** words/syllables per second 
-- Accuracy: **95.13%** on *test.txt* provided in *datasets* folder
+- Speed: **350** sentences per second ~ **3500** words/syllables per second 
+- Accuracy: **96.52%** on *test.txt* provided in *datasets* folder
 
 ```java
 AccuracyCalculator ac = new AccuracyCalculator(); 
@@ -24,6 +24,17 @@ System.out.println("Accuracy:" + ac.getAccuracy("datasets/test.txt") +"%");
 AccentPredictor ap = new AccentPredictor();
 String str = "Toi thich di du lich Ha Noi";
 String predictedStr = ap.predictAccents(str);
+
+```
+
+- You can also get **top N** predicted results as follows:
+
+```java
+AccentPredictor ap = new AccentPredictor();
+String str = "Toi thich di du lich Ha Noi";
+
+// (matched_str,  matched_score) map
+LinkedHashMap<String, Double> = ap.predictAccentsWithMultiMatches(str, 5); //Return the 5 best matches
 
 ```
 
@@ -47,3 +58,5 @@ String _2GramsFileOut =  "datasets/news2grams";
 new NGramer(dataFolderPath).statisticNGrams(numberOfProcessingFiles, toLowercase, _1GramFileOut, _2GramsFileOut);
 
 ```
+
+
